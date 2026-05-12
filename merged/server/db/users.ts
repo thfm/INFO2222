@@ -30,6 +30,11 @@ export function openDbWithSchema(path: string): Database.Database {
   return db;
 }
 
+export function clearUsers(db: Database.Database): void {
+  db.prepare('DELETE FROM users').run();
+  db.prepare("DELETE FROM sqlite_sequence WHERE name = 'users'").run();
+}
+
 export function createUser(
   db: Database.Database,
   username: string,

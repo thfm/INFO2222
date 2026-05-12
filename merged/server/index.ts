@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer as createViteServer } from 'vite';
 import { ALGORITHM } from './crypto/index.js';
-import { openDbWithSchema } from './db/users.js';
+import { clearUsers, openDbWithSchema } from './db/users.js';
 import { adminRoutes } from './routes/admin.js';
 import { authRoutes } from './routes/auth.js';
 
@@ -15,6 +15,7 @@ const port = Number(process.env.PORT ?? 3000);
 const isProduction = process.env.NODE_ENV === 'production';
 
 const db = openDbWithSchema(dbPath);
+clearUsers(db);
 const app = express();
 
 app.use(express.json({ limit: '4kb' }));
@@ -37,6 +38,7 @@ if (isProduction) {
 app.listen(port, () => {
   console.log(`[contritrack] Secure password storage: ${ALGORITHM}`);
   console.log(`[contritrack] DB at ${dbPath}`);
+  console.log('[contritrack] User records cleared on startup');
   console.log(`[contritrack] Running on http://localhost:${port}`);
   if (isProduction && !existsSync(join(projectRoot, 'dist', 'index.html'))) {
     console.warn('[contritrack] dist/index.html was not found. Run npm run build before production start.');
