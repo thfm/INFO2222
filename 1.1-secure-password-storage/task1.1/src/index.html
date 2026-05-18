@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>INFO2222 Task 1.1 Test UI</title>
+    <style>
+      body { font-family: system-ui, -apple-system, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+      h1 { font-size: 1.4rem; margin-bottom: 0.2rem; }
+      h2 { font-size: 1.05rem; margin-top: 0; }
+      .subtitle { color: #666; margin-top: 0; margin-bottom: 1.5rem; font-size: 0.95rem; }
+      section { border: 1px solid #ddd; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: #fafafa; }
+      label { display: block; margin: 0.5rem 0 0.25rem; font-size: 0.9rem; font-weight: 600; }
+      input { width: 100%; padding: 0.5rem; border: 1px solid #bbb; border-radius: 4px; box-sizing: border-box; font: inherit; }
+      button { margin-top: 0.75rem; padding: 0.55rem 1.1rem; background: #0b5fff; color: #fff; border: 0; border-radius: 4px; cursor: pointer; font: inherit; }
+      button:hover { background: #094cd0; }
+      pre { background: #1e1e1e; color: #d4d4d4; padding: 0.75rem; border-radius: 4px; overflow-x: auto; font-size: 0.82rem; white-space: pre-wrap; word-break: break-all; margin-top: 0.75rem; max-height: 260px; overflow-y: auto; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .demo-note { background: #fff8dc; border: 1px solid #e0c547; color: #665000; padding: 0.5rem 0.75rem; border-radius: 4px; font-size: 0.85rem; margin-bottom: 0.75rem; }
+      @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <h1>INFO2222 Phase 3 — Task 1.1 Secure Password Storage</h1>
+    <p class="subtitle">Test UI for the register / login / admin flow. Argon2id + per-password salt + server-side pepper.</p>
+
+    <div class="row">
+      <section>
+        <h2>Register</h2>
+        <label>Username <input id="reg-u" autocomplete="off" placeholder="e.g. alice" /></label>
+        <label>Password <input id="reg-p" type="password" autocomplete="new-password" placeholder="12+ chars, not common" /></label>
+        <button onclick="call('/register','reg-u','reg-p','reg-out')">Register</button>
+        <pre id="reg-out">(results appear here)</pre>
+      </section>
+
+      <section>
+        <h2>Login</h2>
+        <label>Username <input id="log-u" autocomplete="off" /></label>
+        <label>Password <input id="log-p" type="password" autocomplete="current-password" /></label>
+        <button onclick="call('/login','log-u','log-p','log-out')">Login</button>
+        <pre id="log-out">(results appear here)</pre>
+      </section>
+    </div>
+
+    <section>
+      <div class="demo-note"><strong>Demo only.</strong> Exposes stored password hashes so graders can see Argon2id PHC strings on video. Never deploy this endpoint.</div>
+      <h2>Admin — stored users and hashes</h2>
+      <button onclick="showAdmin()">Refresh</button>
+      <pre id="admin-out">(click Refresh)</pre>
+    </section>
+
+    <script>
+      async function call(path, uId, pId, outId) {
+        const username = document.getElementById(uId).value;
+        const password = document.getElementById(pId).value;
+        const t0 = performance.now();
+        let status = 'ERR';
+        let body = null;
+        try {
+          const r = await fetch(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+          });
+          status = r.status;
+          body = await r.json().catch(() => ({}));
+        } catch (e) {
+          body = { error: String(e) };
+        }
+        const dt = (performance.now() - t0).toFixed(1);
+        document.getElementById(outId).textContent =
+          'status: ' + status + ' (' + dt + ' ms)\n' + JSON.stringify(body, null, 2);
+      }
+      async function showAdmin() {
+        try {
+          const r = await fetch('/admin/users');
+          document.getElementById('admin-out').textContent = JSON.stringify(await r.json(), null, 2);
+        } catch (e) {
+          document.getElementById('admin-out').textContent = 'ERR: ' + String(e);
+        }
+      }
+    </script>
+  </body>
+</html>
