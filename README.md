@@ -57,3 +57,22 @@ The separate Password project is in the `Password` folder. It runs a Python serv
    ```
 
 To stop the server, press `Ctrl + C` in the terminal.
+
+## Running with the Server Implementation
+
+1. Switch to server-auth branch
+
+```bash
+   git checkout server-auth
+```
+2.  Trust the certificate
+
+```bash
+sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain certs/ca.crt
+```
+
+3. change the directory to merged and run
+
+```bash
+cd merged  && npm run dev
+```
