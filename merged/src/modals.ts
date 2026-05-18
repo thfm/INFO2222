@@ -41,13 +41,26 @@ function escapeHtml(str: string): string {
 }
 
 export function showAuthModal(): void {
-  const renderAuthContent = (mode: 'login' | 'register', message = '') => `
+  type Role = 'student' | 'tutor';
+  let selectedRole: Role = 'student';
+
+  const renderAuthContent = (mode: 'login' | 'register', role: Role, message = '') => `
     <div class="modal__header modal__header--success">
       <div class="modal__header-icon">⌁</div>
       <h3 class="modal__header-title">Secure Account Access</h3>
       <p class="modal__header-sub">Passwords are stored server-side with Argon2id, unique salts, and a pepper secret.</p>
     </div>
     <div class="modal__body">
+      <div class="auth-role-toggle">
+        <button class="auth-role-btn ${role === 'student' ? 'auth-role-btn--active' : ''}" id="auth-role-student" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Student
+        </button>
+        <button class="auth-role-btn ${role === 'tutor' ? 'auth-role-btn--active' : ''}" id="auth-role-tutor" type="button">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Tutor
+        </button>
+      </div>
       <div class="auth-tabs">
         <button class="auth-tab ${mode === 'login' ? 'auth-tab--active' : ''}" id="auth-login-tab">Login</button>
         <button class="auth-tab ${mode === 'register' ? 'auth-tab--active' : ''}" id="auth-register-tab">Register</button>
@@ -79,24 +92,38 @@ export function showAuthModal(): void {
     </div>
   `;
 
-  const html = `<div class="modal modal--auth">${renderAuthContent('register')}</div>`;
+  const html = `<div class="modal modal--auth">${renderAuthContent('register', selectedRole)}</div>`;
   openModal(html);
 
   let mode: 'login' | 'register' = 'register';
 
   const rebind = () => {
     setTimeout(() => {
+      document.getElementById('auth-role-student')?.addEventListener('click', () => {
+        selectedRole = 'student';
+        const modal = getOverlay().querySelector('.modal')!;
+        modal.innerHTML = renderAuthContent(mode, selectedRole);
+        rebind();
+      });
+
+      document.getElementById('auth-role-tutor')?.addEventListener('click', () => {
+        selectedRole = 'tutor';
+        const modal = getOverlay().querySelector('.modal')!;
+        modal.innerHTML = renderAuthContent(mode, selectedRole);
+        rebind();
+      });
+
       document.getElementById('auth-login-tab')?.addEventListener('click', () => {
         mode = 'login';
         const modal = getOverlay().querySelector('.modal')!;
-        modal.innerHTML = renderAuthContent(mode);
+        modal.innerHTML = renderAuthContent(mode, selectedRole);
         rebind();
       });
 
       document.getElementById('auth-register-tab')?.addEventListener('click', () => {
         mode = 'register';
         const modal = getOverlay().querySelector('.modal')!;
-        modal.innerHTML = renderAuthContent(mode);
+        modal.innerHTML = renderAuthContent(mode, selectedRole);
         rebind();
       });
 
@@ -133,15 +160,16 @@ export function showAuthModal(): void {
           const user = mode === 'register'
             ? await register(username, password)
             : await login(username, password);
-          setState({ authUser: user });
+          // Lock the view to the role the user selected in the toggle
+          setState({ authUser: user, view: selectedRole });
           closeModal();
-          showBanner(`Signed in as ${user.username}. Password storage is protected by ${user.algorithm}.`, 'success');
+          showBanner(`Signed in as ${user.username} (${selectedRole}). Password storage is protected by ${user.algorithm}.`, 'success');
           if (state.consentGiven === null) {
             setTimeout(() => showConsentModal(), 350);
           }
         } catch (error) {
           const modal = getOverlay().querySelector('.modal')!;
-          modal.innerHTML = renderAuthContent(mode, escapeHtml((error as Error).message));
+          modal.innerHTML = renderAuthContent(mode, selectedRole, escapeHtml((error as Error).message));
           rebind();
         }
       });

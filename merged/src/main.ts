@@ -18,6 +18,8 @@ function renderApp(): void {
           </div>
         </div>
         <div class="app-header__center">
+          <!-- View toggle hidden after login — role is locked to the selection made at sign-in -->
+          ${!state.authUser ? `
           <div class="view-toggle-bar">
             <button class="view-toggle-bar__btn ${state.view === 'student' ? 'view-toggle-bar__btn--active' : ''}" id="switch-student" title="Student view">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -28,6 +30,7 @@ function renderApp(): void {
               Tutor
             </button>
           </div>
+          ` : ''}
         </div>
         <div class="app-header__right">
           ${state.flagCount > 0 && state.view === 'tutor' ? `
