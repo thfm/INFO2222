@@ -28,7 +28,7 @@ To stop the server, press `Ctrl + C` in the terminal.
 
 ## Running the Password project
 
-The separate Password project is in the `Password` folder. It runs a Python server that hosts the demo pages and starts a WebSocket server for the TLS simulation.
+The separate Password project is in the `1.3 Secure Password Transmission` folder. It runs a Python server that hosts the demo pages and starts a WebSocket server for the TLS simulation.
 
 1. Open a terminal in the project root.
 2. Install the required Python package if it is not already installed:
@@ -40,7 +40,7 @@ The separate Password project is in the `Password` folder. It runs a Python serv
 3. Start the Password server:
 
    ```bash
-   cd Password
+   cd 1.3\ Secure\ Password\ Transmission
    python3 new_server.py
    ```
 
